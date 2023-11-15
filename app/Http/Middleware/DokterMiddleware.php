@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+
+class DokterMiddleware
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
+     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     */
+    public function handle(Request $request, Closure $next)
+    {
+        if (auth()->guest() || auth()->user()->role != 'dokter') {
+            return redirect('/login');
+        } else if (auth()->user()->role == 'dokter' && auth()->user()->is_active == false) {
+            return redirect('/face-recognation');
+        } else if (auth()->user()->role == 'dokter' && auth()->user()->is_active == true) {
+            return $next($request);
+        }
+    }
+}
