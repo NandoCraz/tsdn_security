@@ -11,7 +11,10 @@ class SecurityController extends Controller
 {
     public function index()
     {
-        return view('faceRecognation.index');
+        $api_token = env('API_TOKEN');
+        return view('faceRecognation.index', [
+            'api_token' => $api_token
+        ]);
     }
 
     public function checkActive(Request $request)
@@ -48,7 +51,7 @@ class SecurityController extends Controller
 
         $similarity = $imageComparator->compare($image1, $image2);
 
-        // dd($similarity);
+        dd($similarity);
 
         if ($similarity > 40) {
             User::where('id', $request->id)->update([

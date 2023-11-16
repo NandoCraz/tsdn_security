@@ -49,32 +49,29 @@
 
                     <div class="card-body p-0">
                         <!-- Nested Row within Card Body -->
-                        <form action="/face-check" method="post" enctype="multipart/form-data">
-                            @csrf
-                            <div class="row align-items-center">
-                                <div class="col-lg-6">
-                                    <div class="col-md-6">
-                                        <div id="results"
-                                            class="d-flex justify-content-center align-items-center rounded"
-                                            style="width: 400px;">Your captured image will appear
-                                            here...</div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div id="my_camera"></div>
-                                    <br />
-                                    <div class="d-flex w-100 justify-content-center">
-                                        <input type=button class="btn btn-secondary btn-sm" value="Take Photo"
-                                            onClick="take_snapshot()">
-                                    </div>
-                                    <input type="hidden" name="image" type="file" class="image-tag">
-                                    <input type="hidden" name="id" value="{{ auth()->user()->id }}">
-                                </div>
-                                <div class="col-lg-12 d-flex my-4 justify-content-center">
-                                    <button type="submit" class="btn btn-sm btn-success">Check</button>
+                        <div class="row align-items-center">
+                            <div class="col-lg-6">
+                                <div class="col-md-6">
+                                    <div id="results" class="d-flex justify-content-center align-items-center rounded"
+                                        style="width: 400px;">Your captured image will appear
+                                        here...</div>
                                 </div>
                             </div>
-                        </form>
+                            <div class="col-lg-6">
+                                <div id="my_camera"></div>
+                                <br />
+                                <div class="d-flex w-100 justify-content-center">
+                                    <input type=button class="btn btn-secondary btn-sm" value="Take Photo"
+                                        onClick="take_snapshot()">
+                                </div>
+                                <input type="hidden" name="image" type="file" class="image-tag">
+                                <input type="hidden" name="id" value="{{ auth()->user()->id }}">
+                            </div>
+                            <div class="col-lg-12 d-flex my-4 justify-content-center">
+                                <button type="button" onclick="javascript:check_similarity()"
+                                    class="btn btn-sm btn-success">Check</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -120,227 +117,171 @@
                 document.getElementById('results').innerHTML = '<img src="' + data_uri + '" width="350" />';
             });
         }
-    </script>
 
-    <script>
-        "use strict";
+        var person_uuid = null
+        var API_TOKEN = `{{ $api_token }}`
+        var face_base = `{{ 'storage/' . auth()->user()->foto }}`
 
-        const msRest = require("@azure/ms-rest-js");
-        const Face = require("@azure/cognitiveservices-face");
-        const {
-            v4: uuid
-        } = require("uuid");
+        function similarity(face1, face2, callback) {
+            var myHeaders = new Headers();
+            myHeaders.append("token", API_TOKEN);
 
-        const key = process.env.FACE_API_KEY;
-        const endpoint = process.env.FACE_API_ENDPOINT;
+            var formdata = new FormData();
 
-        const credentials = new msRest.ApiKeyCredentials({
-            inHeader: {
-                "Ocp-Apim-Subscription-Key": key,
-            },
-        });
-        const client = new Face.FaceClient(credentials, endpoint);
+            if ((typeof face1 == "string") && (face1.indexOf("https://") == 0))
+                formdata.append("face1", face1);
+            else
+                formdata.append("face1", face1);
 
-        const image_base_url =
-            "https://raw.githubusercontent.com/Azure-Samples/cognitive-services-sample-data-files/master/Face/images/";
-        const person_group_id = uuid();
+            if ((typeof face2 == "string") && (face2.indexOf("https://") == 0))
+                formdata.append("face2", face2);
+            else
+                formdata.append("face2", face2);
 
-        function sleep(ms) {
-            return new Promise((resolve) => setTimeout(resolve, ms));
-        }
-
-        async function DetectFaceRecognize(url) {
-            // Detect faces from image URL. Since only recognizing, use the recognition model 4.
-            // We use detection model 3 because we are only retrieving the qualityForRecognition attribute.
-            // Result faces with quality for recognition lower than "medium" are filtered out.
-            let detected_faces = await client.face.detectWithUrl(url, {
-                detectionModel: "detection_03",
-                recognitionModel: "recognition_04",
-                returnFaceAttributes: ["QualityForRecognition"],
-            });
-            return detected_faces.filter(
-                (face) =>
-                face.faceAttributes.qualityForRecognition == "high" ||
-                face.faceAttributes.qualityForRecognition == "medium"
-            );
-        }
-
-        async function AddFacesToPersonGroup(person_dictionary, person_group_id) {
-            console.log("Adding faces to person group...");
-            // The similar faces will be grouped into a single person group person.
-
-            await Promise.all(
-                Object.keys(person_dictionary).map(async function(key) {
-                    const value = person_dictionary[key];
-
-                    let person = await client.personGroupPerson.create(
-                        person_group_id, {
-                            name: key,
-                        }
-                    );
-                    console.log("Create a persongroup person: " + key + ".");
-
-                    // Add faces to the person group person.
-                    await Promise.all(
-                        value.map(async function(similar_image) {
-                            // Wait briefly so we do not exceed rate limits.
-                            await sleep(1000);
-
-                            // Check if the image is of sufficent quality for recognition.
-                            let sufficientQuality = true;
-                            let detected_faces = await client.face.detectWithUrl(
-                                image_base_url + similar_image, {
-                                    returnFaceAttributes: ["QualityForRecognition"],
-                                    detectionModel: "detection_03",
-                                    recognitionModel: "recognition_03",
-                                }
-                            );
-                            detected_faces.forEach((detected_face) => {
-                                if (
-                                    detected_face.faceAttributes
-                                    .qualityForRecognition != "high"
-                                ) {
-                                    sufficientQuality = false;
-                                }
-                            });
-
-                            // Wait briefly so we do not exceed rate limits.
-                            await sleep(1000);
-
-                            // Quality is sufficent, add to group.
-                            if (sufficientQuality) {
-                                console.log(
-                                    "Add face to the person group person: (" +
-                                    key +
-                                    ") from image: " +
-                                    similar_image +
-                                    "."
-                                );
-                                await client.personGroupPerson.addFaceFromUrl(
-                                    person_group_id,
-                                    person.personId,
-                                    image_base_url + similar_image
-                                );
-                            }
-                            // Wait briefly so we do not exceed rate limits.
-                            await sleep(1000);
-                        })
-                    );
-                })
-            );
-
-            console.log("Done adding faces to person group.");
-        }
-
-        async function WaitForPersonGroupTraining(person_group_id) {
-            // Wait so we do not exceed rate limits.
-            console.log("Waiting 10 seconds...");
-            await sleep(10000);
-            let result = await client.personGroup.getTrainingStatus(person_group_id);
-            console.log("Training status: " + result.status + ".");
-            if (result.status !== "succeeded") {
-                await WaitForPersonGroupTraining(person_group_id);
-            }
-        }
-
-        /* NOTE This function might not work with the free tier of the Face service
-                because it might exceed the rate limits. If that happens, try inserting calls
-                to sleep() between calls to the Face service.
-                */
-        async function IdentifyInPersonGroup() {
-            console.log("========IDENTIFY FACES========");
-            console.log();
-
-            // Create a dictionary for all your images, grouping similar ones under the same key.
-            const person_dictionary = {
-                "Family1-Dad": ["Family1-Dad1.jpg", "Family1-Dad2.jpg"],
-                "Family1-Mom": ["Family1-Mom1.jpg", "Family1-Mom2.jpg"],
-                "Family1-Son": ["Family1-Son1.jpg", "Family1-Son2.jpg"],
-                "Family1-Daughter": ["Family1-Daughter1.jpg", "Family1-Daughter2.jpg"],
-                "Family2-Lady": ["Family2-Lady1.jpg", "Family2-Lady2.jpg"],
-                "Family2-Man": ["Family2-Man1.jpg", "Family2-Man2.jpg"],
+            var requestOptions = {
+                method: 'POST',
+                headers: myHeaders,
+                body: formdata,
+                redirect: 'follow'
             };
 
-            // A group photo that includes some of the persons you seek to identify from your dictionary.
-            let source_image_file_name = "identification1.jpg";
-
-            // Create a person group.
-            console.log("Creating a person group with ID: " + person_group_id);
-            await client.personGroup.create(person_group_id, person_group_id, {
-                recognitionModel: "recognition_04",
-            });
-
-            await AddFacesToPersonGroup(person_dictionary, person_group_id);
-
-            // Start to train the person group.
-            console.log();
-            console.log("Training person group: " + person_group_id + ".");
-            await client.personGroup.train(person_group_id);
-
-            await WaitForPersonGroupTraining(person_group_id);
-            console.log();
-
-            // Detect faces from source image url and only take those with sufficient quality for recognition.
-            let face_ids = (
-                await DetectFaceRecognize(image_base_url + source_image_file_name)
-            ).map((face) => face.faceId);
-
-            // Identify the faces in a person group.
-            let results = await client.face.identify(face_ids, {
-                personGroupId: person_group_id,
-            });
-            await Promise.all(
-                results.map(async function(result) {
-                    try {
-                        let person = await client.personGroupPerson.get(
-                            person_group_id,
-                            result.candidates[0].personId
-                        );
-
-                        console.log(
-                            "Person: " +
-                            person.name +
-                            " is identified for face in: " +
-                            source_image_file_name +
-                            " with ID: " +
-                            result.faceId +
-                            ". Confidence: " +
-                            result.candidates[0].confidence +
-                            "."
-                        );
-
-                        // Verification:
-                        let verifyResult = await client.face.verifyFaceToPerson(
-                            result.faceId,
-                            person.personId, {
-                                personGroupId: person_group_id,
-                            }
-                        );
-                        console.log(
-                            "Verification result between face " +
-                            result.faceId +
-                            " and person " +
-                            person.personId +
-                            ": " +
-                            verifyResult.isIdentical +
-                            " with confidence: " +
-                            verifyResult.confidence
-                        );
-                    } catch (error) {
-                        //console.log("no persons identified for face with ID " + result.faceId);
-                        console.log(error.toString());
-                    }
-                })
-            );
-            console.log();
+            fetch("https://api.luxand.cloud/photo/landmarks", requestOptions)
+                .then(response => response.json())
+                .then(result => callback(result))
+                .catch(error => console.log('error', error));
         }
 
-        async function main() {
-            await IdentifyInPersonGroup();
-            console.log("Done.");
+        function check_similarity() {
+            var face1 = face_base;
+            var face2 = $(".image-tag").val();
+
+            similarity(face1, face2, function(result) {
+                console.log(result);
+            });
         }
-        main();
     </script>
+
+    {{-- <script>
+        Webcam.set({
+            width: 490,
+            height: 350,
+            image_format: 'jpeg',
+            jpeg_quality: 90
+        });
+
+        Webcam.attach('#my_camera');
+
+        function take_snapshot() {
+            Webcam.snap(function(data_uri) {
+                $(".image-tag").val(data_uri);
+                document.getElementById('results').innerHTML = '<img src="' + data_uri + '" width="350" />';
+            });
+        }
+        
+        var person_uuid = null
+        var API_TOKEN = `{{ $api_token }}`
+
+        function add_person(name, image, collections, callback) {
+            var myHeaders = new Headers();
+            myHeaders.append("token", API_TOKEN);
+
+            var formdata = new FormData();
+            formdata.append("name", name);
+
+            if ((typeof image == "string") && (image.indexOf("https://") == 0))
+                formdata.append("photos", image);
+            else
+                formdata.append("photos", image, "file");
+
+            formdata.append("store", "1");
+            formdata.append("collections", collections);
+
+            var requestOptions = {
+                method: 'POST',
+                headers: myHeaders,
+                body: formdata,
+                redirect: 'follow'
+            };
+
+            fetch("https://api.luxand.cloud/v2/person", requestOptions)
+                .then(response => response.json())
+                .then(result => callback(result))
+                .catch(error => console.log('error', error));
+        }
+
+        // function add_face(person_uuid, image, callback) {
+        //     var myHeaders = new Headers();
+        //     myHeaders.append("token", API_TOKEN);
+
+        //     var formdata = new FormData();
+
+        //     if ((typeof image == "string") && (image.indexOf("https://") == 0))
+        //         formdata.append("photos", image);
+        //     else
+        //         formdata.append("photos", image, "file");
+
+        //     formdata.append("store", "1");
+
+        //     var requestOptions = {
+        //         method: 'POST',
+        //         headers: myHeaders,
+        //         body: formdata,
+        //         redirect: 'follow'
+        //     };
+
+        //     fetch("https://api.luxand.cloud/v2/person/" + person_uuid, requestOptions)
+        //         .then(response => response.json())
+        //         .then(result => callback(result))
+        //         .catch(error => console.log('error', error));
+        // }
+
+        function verify(person_uuid, image, callback) {
+            var myHeaders = new Headers();
+            myHeaders.append("token", API_TOKEN);
+
+            var formdata = new FormData();
+
+            if ((typeof image == "string") && (image.indexOf("https://") == 0))
+                formdata.append("photo", image);
+            else
+                formdata.append("photo", image, "file");
+
+            var requestOptions = {
+                method: 'POST',
+                headers: myHeaders,
+                body: formdata,
+                redirect: 'follow'
+            };
+
+            fetch("https://api.luxand.cloud/photo/verify/" + person_uuid, requestOptions)
+                .then(response => response.json())
+                .then(result => callback(result))
+                .catch(error => console.log('error', error));
+        }
+
+        function upload_person() {
+            var face = {{ 'storage/' . auth()->user()->foto }}
+            name = `{{ auth()->user()->name }}`
+
+            add_person(name, face, "", function(result) {
+                if (result.status == "success") {
+                    // document.getElementById("person_id").innerHTML = result["uuid"]
+                    person_uuid = result["uuid"]
+                }
+            });
+        }
+
+        function verify_person() {
+            var photo = document.getElementsByName("image");
+            console.log(photo);
+
+            // verify(person_uuid, photo, function(result) {
+            //     console.log(result["message"])
+            //     // document.getElementById("verification_status").innerHTML = result["message"]
+            //     // document.getElementsByClassName("recognize-result")[0]["style"]["display"] = "block"
+            // });
+        }
+    </script> --}}
 
     @if (session('success'))
         <script>
