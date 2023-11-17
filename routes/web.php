@@ -23,7 +23,7 @@ Route::post('/login', [LoginController::class, 'login'])->middleware('guest');
 Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth');
 
 Route::get('/face-recognation', [SecurityController::class, 'index'])->middleware('recognition');
-Route::post('/face-check', [SecurityController::class, 'faceCheck'])->middleware('recognition');
+Route::get('/face-check', [SecurityController::class, 'faceCheck'])->middleware('recognition');
 Route::get('/check-active', [SecurityController::class, 'checkActive'])->middleware('dokter');
 
 Route::get('/', [DashboardController::class, 'index'])->middleware('dokter');

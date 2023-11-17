@@ -101,6 +101,13 @@
     <script src="{{ asset('assets_login/js/demo/chart-pie-demo.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    @php
+        // Atur header CORS di PHP
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type');
+    @endphp
+
     <script>
         Webcam.set({
             width: 490,
@@ -122,38 +129,118 @@
         var API_TOKEN = `{{ $api_token }}`
         var face_base = `{{ 'storage/' . auth()->user()->foto }}`
 
+        function fetchBlobFromUrl(url) {
+            return fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.blob();
+                });
+        }
+
         function similarity(face1, face2, callback) {
             var myHeaders = new Headers();
             myHeaders.append("token", API_TOKEN);
 
             var formdata = new FormData();
 
-            if ((typeof face1 == "string") && (face1.indexOf("https://") == 0))
-                formdata.append("face1", face1);
-            else
-                formdata.append("face1", face1);
+            Promise.all([
+                    fetchBlobFromUrl(face1),
+                    fetchBlobFromUrl(face2)
+                ])
+                .then(blobs => {
+                    const [blob1, blob2] = blobs;
 
-            if ((typeof face2 == "string") && (face2.indexOf("https://") == 0))
-                formdata.append("face2", face2);
-            else
-                formdata.append("face2", face2);
+                    console.log(blob1, blob2);
+                    // Lakukan sesuatu dengan Blob
+                    formdata.append("face1", blob1, "file");
+                    formdata.append("face2", blob2, "file");
 
-            var requestOptions = {
-                method: 'POST',
-                headers: myHeaders,
-                body: formdata,
-                redirect: 'follow'
-            };
+                    var requestOptions = {
+                        method: 'POST',
+                        headers: myHeaders,
+                        body: formdata,
+                        redirect: 'follow'
+                    };
 
-            fetch("https://api.luxand.cloud/photo/landmarks", requestOptions)
-                .then(response => response.json())
+                    return fetch("https://api.luxand.cloud/photo/similarity", requestOptions);
+                })
+                .then(response => {
+                    // Tanggapan dari permintaan ke API Luxand Cloud
+                    if (response.ok) {
+                        // Jika respons berhasil, lanjutkan dengan menangani data respons
+                        response.json().then(result => {
+                            if (result.similar == true) {
+                                $.ajax({
+                                    url: '/face-check',
+                                    method: 'GET',
+                                    data: {
+                                        _token: '{{ csrf_token() }}',
+                                        id: {{ auth()->user()->id }},
+                                    },
+                                    success: function(data) {
+                                        const Toast = Swal.mixin({
+                                            toast: true,
+                                            position: 'top-end',
+                                            showConfirmButton: false,
+                                            timer: 1500,
+                                            timerProgressBar: true,
+                                            didOpen: (toast) => {
+                                                toast.addEventListener('mouseenter',
+                                                    Swal
+                                                    .stopTimer)
+                                                toast.addEventListener('mouseleave',
+                                                    Swal
+                                                    .resumeTimer)
+                                            }
+                                        })
+                                        Toast.fire({
+                                            icon: 'success',
+                                            title: 'Wajah cocok, silahkan masuk'
+                                        }).then((result) => {
+                                            location.reload();
+                                        })
+                                    }
+                                })
+                            } else {
+                                const Toast = Swal.mixin({
+                                    toast: true,
+                                    position: 'top-end',
+                                    showConfirmButton: false,
+                                    timer: 1500,
+                                    timerProgressBar: true,
+                                    didOpen: (toast) => {
+                                        toast.addEventListener('mouseenter',
+                                            Swal
+                                            .stopTimer)
+                                        toast.addEventListener('mouseleave',
+                                            Swal
+                                            .resumeTimer)
+                                    }
+                                })
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: 'Wajah tidak cocok'
+                                }).then((result) => {
+                                    location.reload();
+                                })
+                            }
+                        });
+                    } else {
+                        // Jika respons tidak berhasil, lempar kesalahan
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                })
                 .then(result => callback(result))
                 .catch(error => console.log('error', error));
+
         }
 
         function check_similarity() {
             var face1 = face_base;
-            var face2 = $(".image-tag").val();
+            // var face2 = face_base;
+            var face2 = $(".image-tag").val()
 
             similarity(face1, face2, function(result) {
                 console.log(result);

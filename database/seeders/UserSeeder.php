@@ -16,22 +16,52 @@ class UserSeeder extends Seeder
     public function run()
     {
         User::create([
-            'name' => "Dr. Hargo Wihardjo",
-            'email' => "dokterharjo@gmail.com",
+            'name' => "Dr. Nando Septian",
+            'email' => "dokternando@gmail.com",
             'no_hp' => "081234567890",
-            'password' => bcrypt('dokterharjo'),
-            'foto' => "fotoProfile/user_pic.png",
+            'password' => bcrypt('dokternando'),
+            'foto' => "fotoProfile/harjo.jpg",
             'is_active' => false,
             'role' => 'dokter',
-            'face_id' => 'fotoProfile/harjo.jpeg'
+            // 'face_id' => 'fotoProfile/harjo.jpg'
         ]);
 
         User::create([
-            'name' => "Dr. Santi Astutik",
-            'email' => "doktersanti@gmail.com",
+            'name' => "Dr. Rakan Refaya",
+            'email' => "dokterrakan@gmail.com",
             'no_hp' => "081298765432",
-            'password' => bcrypt('doktersanti'),
-            'foto' => "fotoProfile/user_pic.png",
+            'password' => bcrypt('dokterrakan'),
+            'foto' => "fotoProfile/rakan.jpg",
+            'is_active' => false,
+            'role' => 'dokter',
+            // 'face_id' => 'fotoProfile/harjo.jpeg'
+        ]);
+        User::create([
+            'name' => "Dr. Faiz Iwan",
+            'email' => "dokterfaiz@gmail.com",
+            'no_hp' => "081299765432",
+            'password' => bcrypt('dokterfaiz'),
+            'foto' => "fotoProfile/faiz.jpg",
+            'is_active' => false,
+            'role' => 'dokter',
+            // 'face_id' => 'fotoProfile/harjo.jpeg'
+        ]);
+        User::create([
+            'name' => "Dr. Naza Sulthoniyah",
+            'email' => "dokternaza@gmail.com",
+            'no_hp' => "081298766432",
+            'password' => bcrypt('dokternaza'),
+            'foto' => "fotoProfile/naza.jpg",
+            'is_active' => false,
+            'role' => 'dokter',
+            // 'face_id' => 'fotoProfile/harjo.jpeg'
+        ]);
+        User::create([
+            'name' => "Dr. Hilmy Fahrizal",
+            'email' => "dokterhilmy@gmail.com",
+            'no_hp' => "081278765432",
+            'password' => bcrypt('dokterhilmy'),
+            'foto' => "fotoProfile/hilmy.jpg",
             'is_active' => false,
             'role' => 'dokter',
             // 'face_id' => 'fotoProfile/harjo.jpeg'
