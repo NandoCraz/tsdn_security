@@ -16,11 +16,12 @@ return new class extends Migration
         Schema::create('pasiens', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
-            $table->string('kategori');
+            $table->string('pekerjaan');
             $table->string('jenis_kelamin');
             $table->integer('usia');
             $table->date('tgl_masuk');
-            $table->string('penyakit');
+            $table->string('nama_dokter');
+            $table->string('diagnosa');
             $table->double('pembayaran');
             $table->string('kota');
             $table->date('tgl_keluar');

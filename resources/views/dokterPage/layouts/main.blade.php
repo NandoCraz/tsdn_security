@@ -394,7 +394,6 @@ License: You must have a valid license purchased only from wrapbootstrap.com (li
 
         resetTimer();
     </script>
-    
 </body>
 <!-- END Body -->
 

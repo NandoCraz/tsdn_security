@@ -36,16 +36,16 @@
             <i class="ni ni-menu"></i>
         </a>
     </div>
-    <div class="search">
+    {{-- <div class="search">
         <form class="app-forms hidden-xs-down" role="search" action="page_search.html" autocomplete="off">
-            <input type="text" id="search-field" placeholder="Search for anything" class="form-control"
+            <input type="text" id="search-field" placeholder="Searching" class="form-control"
                 tabindex="1">
             <a href="#" onclick="return false;" class="btn-danger btn-search-close js-waves-off d-none"
                 data-action="toggle" data-class="mobile-search-on">
                 <i class="fal fa-times"></i>
             </a>
         </form>
-    </div>
+    </div> --}}
     <div class="ml-auto d-flex">
         <!-- activate app search icon (mobile) -->
         <div class="hidden-sm-up">
@@ -62,9 +62,9 @@
         </div>
         <!-- app user menu -->
         <div>
-            <a href="#" data-toggle="dropdown" title="drlantern@gotbootstrap.com"
+            <a href="#" data-toggle="dropdown" title="Foto {{ auth()->user()->name }}"
                 class="header-icon d-flex align-items-center justify-content-center ml-2">
-                <img src="{{ asset('storage/' . auth()->user()->foto) }}" class="profile-image rounded-circle"
+                <img style="height: 30px; width: 30px;object-fit: contain" src="{{ asset('storage/' . auth()->user()->foto) }}" class="profile-image rounded-circle img-fluid"
                     alt="Dr. Codex Lantern">
                 <!-- you can also add username next to the avatar with the codes below:
                 <span class="ml-1 mr-1 text-truncate text-truncate-header hidden-xs-down">Me</span>

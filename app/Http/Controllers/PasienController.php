@@ -15,4 +15,4 @@ class PasienController extends Controller
             'pasien' => $pasien
         ]);
     }
-}
+} 
