@@ -15,4 +15,13 @@ class PasienController extends Controller
             'pasien' => $pasien
         ]);
     }
+
+    public function detail($id)
+    {
+        $pasien = Pasien::find($id);
+
+        return view('dokterPage.detailPasien', [
+            'pasien' => $pasien
+        ]);
+    }
 } 

@@ -34,7 +34,7 @@
                                 <tr>
                                     <th>No</th>
                                     <th>Nama</th>
-                                    <th>Kategori</th> 
+                                    <th>Kategori</th>
                                     <th>Jenis Kelamin</th>
                                     <th>Penyakit</th>
                                     <th>Aksi</th>
@@ -50,9 +50,8 @@
                                         <td>{{ $psn->jenis_kelamin }}</td>
                                         <td>{{ $psn->diagnosa }}</td>
                                         <td>
-                                            <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                                Detail
-                                              </button>
+                                            <a href="/data-pasien/detail/{{ $psn->id }}"
+                                                class="btn btn-sm btn-secondary">Detail</a>
                                         </td>
                                     </tr>
                                 @endforeach

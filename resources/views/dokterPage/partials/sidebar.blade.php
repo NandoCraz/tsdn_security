@@ -46,7 +46,7 @@
                 </a>
             </li>
             @if (auth()->user()->role == 'dokter')
-                <li class="{{ Request::Is('data-pasien') ? 'active' : '' }}">
+                <li class="{{ Request::Is('data-pasien*') ? 'active' : '' }}">
                     <a href="/data-pasien" title="Basic Tables" data-filter-tags="data pasien">
                         <span class="nav-link-text" data-i18n="nav.tables_basic_tables"><i class="fa fa-list mr-2"
                                 aria-hidden="true"></i> Data Pasien</span>

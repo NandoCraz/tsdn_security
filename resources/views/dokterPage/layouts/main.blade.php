@@ -12,7 +12,7 @@ License: You must have a valid license purchased only from wrapbootstrap.com (li
 <head>
     <meta charset="utf-8">
     <title>
-        Export - Datatables - SmartAdmin v4.5.1
+        Aplikasi Data Pasien
     </title>
     <meta name="description" content="Export">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
