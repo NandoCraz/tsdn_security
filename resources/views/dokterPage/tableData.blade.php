@@ -15,7 +15,7 @@
             <div id="panel-1" class="panel">
                 <div class="panel-hdr">
                     <h2>
-                        Data
+                        Data Pasien
                     </h2>
                     <div class="panel-toolbar">
                         <button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10"
@@ -34,28 +34,31 @@
                                 <tr>
                                     <th>No</th>
                                     <th>Nama</th>
-                                    <th>Kategori</th>
+                                    <th>Kategori</th> 
                                     <th>Jenis Kelamin</th>
+                                    <th>Penyakit</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($pasien as $i => $psn)
                                     <tr>
-                                        <td>{{ $i + 1 }}</td>
+                                        <td>{{ $psn->id }}</td>
                                         </td>
                                         <td>{{ $psn->nama }}</td>
-                                        <td>{{ $psn->kategori }}</td>
+                                        <td>{{ $psn->pekerjaan }}</td>
                                         <td>{{ $psn->jenis_kelamin }}</td>
+                                        <td>{{ $psn->diagnosa }}</td>
                                         <td>
-                                            <a href="/detail/{{ $psn->nama }}"
-                                                class="btn btn-sm btn-secondary">Detail</a>
+                                            <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                                Detail
+                                              </button>
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
-                        <div class="d-flex justify-content-end w-100">
+                        <div class="d-flex justify-content-center w-100">
                             {{ $pasien->links() }}
                         </div>
                         <!-- datatable end -->

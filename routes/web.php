@@ -28,3 +28,4 @@ Route::get('/check-active', [SecurityController::class, 'checkActive'])->middlew
 
 Route::get('/', [DashboardController::class, 'index'])->middleware('dokter');
 Route::get('/data-pasien', [PasienController::class, 'index'])->middleware('dokter');
+    
